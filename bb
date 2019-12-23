@@ -27,9 +27,31 @@ function create_from_local() {
   git push -u origin --tags
 }
 
+function browse() {
+  chrome https://bitbucket.org/$(git remote get-url origin | sed 's@.*[/:]\([^:/]\+/[^/.]*\)\(\.git\)\?$@\1@')
+}
+
+usage() {
+  declare -r SCRIPT_FILE_NAME="$(basename "$0")"
+  echo "Usage:"
+  echo "  * ${SCRIPT_FILE_NAME} <SUB_COMMAND>"
+  echo
+  echo "SUB_COMMAND:"
+  echo "  * create_from_local"
+  echo "  * browse"
+  echo "  * usage"
+
+  exit 1
+}
 # ======================================================
 
 # load .bitbucket ini file.
+if [[ ! -f "$HOME/.bitbucket" ]]; then
+  echo "[ERROR] A File '$HOME/.bitbucket' is not exists."
+  echo "[ERROR] Please create '$HOME/.bitbucket' that has contains 'username = ...' and 'password = ...' ."
+  exit 1
+fi
+
 source <(
   cat "$HOME/.bitbucket" \
     | sed -n -E 's/^\s*(\S+)\s*=\s*(.+)$/\1=\2/p'
@@ -44,7 +66,13 @@ shift
 
 case "${SUBCOMMAND}" in
   # I want to add more features later.
-  create_from_local | *)
+  create_from_local)
     create_from_local
+    ;;
+  browse)
+    browse
+    ;;
+  help | usage | *)
+    usage
     ;;
 esac
